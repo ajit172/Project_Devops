@@ -1,0 +1,52 @@
+trigger: none
+pool: Default
+steps:
+  - task: SonarQubePrepare@8
+    inputs:
+      SonarQube: 'sonarqube service connection'
+      scannerMode: 'cli'
+      configMode: 'manual'
+      cliProjectKey: 'my_app'
+      cliProjectName: 'my_application'
+      cliSources: '.'
+  - task: SonarQubeAnalyze@8
+    inputs:
+      jdkversion: 'JAVA_HOME_17_X64'
+  - task: SonarQubePublish@8
+    inputs:
+      pollingTimeoutSec: '300'
+
+
+  - task: TerraformTask@5
+    displayName: terraform init
+    inputs:
+      provider: 'azurerm'
+      command: 'init'
+      backendServiceArm: 'ajit123'
+      backendAzureRmResourceGroupName: 'rg-arif'
+      backendAzureRmStorageAccountName: 'arifremotebackend1'
+      backendAzureRmContainerName: 'vm0007'
+      backendAzureRmKey: 'tfstate'
+
+  - task: TerraformTask@5
+    displayName: terraform validate
+    inputs:
+      provider: 'azurerm'
+      command: 'validate'
+  - task: TerraformTask@5
+    displayName: terraform plan
+    inputs:
+      provider: 'azurerm'
+      command: 'plan'
+      environmentServiceNameAzureRM: 'ajit123'
+  - task: ManualValidation@1
+    inputs:
+      notifyUsers: 'ajitk661@gmail.com'
+      approvers: 'ajitk661@gmail.com'
+      instructions: 'please check the code'
+  - task: TerraformTask@5
+    displayName: terraform apply
+    inputs:
+      provider: 'azurerm'
+      command: 'apply'
+      environmentServiceNameAzureRM: 'ajit123'
